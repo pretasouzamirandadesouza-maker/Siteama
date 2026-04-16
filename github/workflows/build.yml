@@ -1,0 +1,51 @@
+name: Build APK
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm install --legacy-peer-deps
+
+      - name: Gerar bundle React Native
+        run: |
+          mkdir -p android/app/src/main/assets
+          npx react-native bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output android/app/src/main/assets/index.android.bundle \
+            --assets-dest android/app/src/main/res
+
+      - name: Limpar recursos duplicados
+        run: |
+          find android/app/src/main/res -type f \( -name "src_assets_*" -o -name "node_modules_*" \) -delete
+
+      - name: Dar permissão pro gradle
+        run: chmod +x android/gradlew
+
+      - name: Compilar APK
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Salvar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: android/app/build/outputs/apk/release/app-release.apk
