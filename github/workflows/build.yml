@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK (Debug)
 
 on:
   push:
@@ -39,14 +39,13 @@ jobs:
       - name: Dar permissão pro gradle
         run: chmod +x android/gradlew
 
-      - name: Compilar APK
+      - name: Compilar APK DEBUG
         run: |
           cd android
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
 
-      - name: Salvar APK
+      - name: Salvar APK DEBUG
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: android/app/build/outputs/apk/release/app-release.apk
-
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
